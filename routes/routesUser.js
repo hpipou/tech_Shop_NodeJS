@@ -4,6 +4,7 @@ const models        = require("../models")
 const jwt           = require("jsonwebtoken")
 const bcrypt        = require("bcrypt")
 const uuid          = require("uuid")
+const validator     = require("validator")
 require("dotenv").config()
 
 /////////////////////////////////////////////////
@@ -11,9 +12,27 @@ require("dotenv").config()
 /////////////////////////////////////////////////
 routes.post("/register", (req,res)=>{
 
+    if(req.body.username==undefined || req.body.username==null)
+    {return res.status(403).json({"error":"USERNAME UNDEFINED"})}
+
+    if(req.body.email==undefined || req.body.email==null)
+    {return res.status(403).json({"error":"EMAIL UNDEFINED"})}
+
+    if(req.body.password==undefined || req.body.password==null)
+    {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
+
     const username       = req.body.username
     const email          = req.body.email
     const password       = req.body.password
+
+    if(!validator.isEmail(email))
+    {return res.status(403).json({"error":"INVALID EMAIL"})}
+    
+    if(!validator.isLength(username, {min:5, max:20}))
+    {return res.status(403).json({"error":"USERNAME MUST BE MIN: 5 & MAX:20 CHARS"})}
+    
+    if(!validator.isLength(password, {min:5, max:20}))
+    {return res.status(403).json({"error":"PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
 
     // check if email exist
     models.User.findOne({attributes :['id'], where:{email:email}})
@@ -52,11 +71,13 @@ routes.post("/register", (req,res)=>{
             const token = jwt.sign({
                 "id": uuidUser,
                 "username": username,
+                "email": email
             }, process.env.SECTOKEN,{expiresIn:'48h'})
             return res.status(201).json({
                 "token":token,
                 "id": uuidUser,
                 "username": username,
+                "email":email
             }) 
         })
         .catch((error)=>{return res.status(500).json(error)})
@@ -69,12 +90,24 @@ routes.post("/register", (req,res)=>{
 // SE CONNECTER
 /////////////////////////////////////////////////
 routes.post("/login", (req,res)=>{
-    
+
+    if(req.body.email==undefined || req.body.email==null)
+    {return res.status(403).json({"error":"EMAIL UNDEFINED"})}
+
+    if(req.body.password==undefined || req.body.password==null)
+    {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
+
     const email          = req.body.email
     const password       = req.body.password
 
+    if(!validator.isEmail(email))
+    {return res.status(403).json({"error":"INVALID EMAIL"})}
+    
+    if(!validator.isLength(password, {min:5, max:20}))
+    {return res.status(403).json({"error":"PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
+
     // check if email exist
-    models.User.findOne({attributes :['id','username', 'password'], where:{email:email}})
+    models.User.findOne({attributes :['id','username','email','password'], where:{email:email}})
     .then((data)=>{
         if(data){
             const resultat = bcrypt.compareSync(password, data.password)
@@ -82,11 +115,13 @@ routes.post("/login", (req,res)=>{
                 const token = jwt.sign({
                     "id": data.id,
                     "username": data.username,
+                    "email": data.email
                 }, process.env.SECTOKEN,{expiresIn:'48h'})
                 return res.status(201).json({
                     "token":token,
                     "id": data.id,
                     "username": data.username,
+                    "email": data.email
                 }) 
             }else{
                 return res.status(403).json({"error":"INVALID PASSWORD"})
@@ -105,11 +140,29 @@ routes.post("/login", (req,res)=>{
 /////////////////////////////////////////////////
 // MODIFIER LE MOT DE PASSE
 /////////////////////////////////////////////////
-routes.patch("/password", (req,res)=>{
+routes.post("/password", (req,res)=>{
+
+    if(req.body.username==undefined || req.body.username==null)
+    {return res.status(403).json({"error":"USERNAME UNDEFINED"})}
+    
+    if(req.body.password==undefined || req.body.password==null)
+    {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
+
+    if(req.body.newpassword==undefined || req.body.newpassword==null)
+    {return res.status(403).json({"error":"NEW PASSWORD UNDEFINED"})}
 
     const username       = req.body.username
     const password       = req.body.password
-    const newpassword       = req.body.newpassword
+    const newpassword    = req.body.newpassword
+
+    if(!validator.isLength(username, {min:5, max:20}))
+    {return res.status(403).json({"error":"USERNAME MUST BE MIN: 5 & MAX:20 CHARS"})}
+    
+    if(!validator.isLength(newpassword, {min:5, max:20}))
+    {return res.status(403).json({"error":"NEW PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
+    
+    if(!validator.isLength(password, {min:5, max:20}))
+    {return res.status(403).json({"error":"PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
 
     // check if username exist
     models.User.findOne({attributes :['id','username', 'password'], where:{username:username}})
@@ -141,10 +194,22 @@ routes.patch("/password", (req,res)=>{
 /////////////////////////////////////////////////
 // SUPPRIMER UN COMPTE
 /////////////////////////////////////////////////
-routes.delete("/delete", (req,res)=>{
+routes.post("/delete", (req,res)=>{
+
+    if(req.body.username==undefined || req.body.username==null)
+    {return res.status(403).json({"error":"USERNAME UNDEFINED"})}
     
+    if(req.body.password==undefined || req.body.password==null)
+    {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
+
     const username       = req.body.username
     const password       = req.body.password
+
+    if(!validator.isLength(username, {min:5, max:20}))
+    {return res.status(403).json({"error":"USERNAME MUST BE MIN: 5 & MAX:20 CHARS"})}
+    
+    if(!validator.isLength(password, {min:5, max:20}))
+    {return res.status(403).json({"error":"PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
 
     // check if username exist
     models.User.findOne({attributes :['id','username', 'password'], where:{username:username}})
