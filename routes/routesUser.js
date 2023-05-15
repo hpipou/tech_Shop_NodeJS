@@ -5,6 +5,7 @@ const jwt           = require("jsonwebtoken")
 const bcrypt        = require("bcrypt")
 const uuid          = require("uuid")
 const validator     = require("validator")
+const tokenVerif    = require("../middleware/tokenVerification")
 require("dotenv").config()
 
 /////////////////////////////////////////////////
@@ -140,10 +141,11 @@ routes.post("/login", (req,res)=>{
 /////////////////////////////////////////////////
 // MODIFIER LE MOT DE PASSE
 /////////////////////////////////////////////////
-routes.post("/password", (req,res)=>{
+routes.post("/password", tokenVerif, (req,res)=>{
 
-    if(req.body.username==undefined || req.body.username==null)
-    {return res.status(403).json({"error":"USERNAME UNDEFINED"})}
+    const token = req.headers.authorization.split(" ")[1]
+    const tokenDecoded = jwt.decode(token)
+    const username = tokenDecoded.username
     
     if(req.body.password==undefined || req.body.password==null)
     {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
@@ -151,12 +153,8 @@ routes.post("/password", (req,res)=>{
     if(req.body.newpassword==undefined || req.body.newpassword==null)
     {return res.status(403).json({"error":"NEW PASSWORD UNDEFINED"})}
 
-    const username       = req.body.username
     const password       = req.body.password
     const newpassword    = req.body.newpassword
-
-    if(!validator.isLength(username, {min:5, max:20}))
-    {return res.status(403).json({"error":"USERNAME MUST BE MIN: 5 & MAX:20 CHARS"})}
     
     if(!validator.isLength(newpassword, {min:5, max:20}))
     {return res.status(403).json({"error":"NEW PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
@@ -194,19 +192,16 @@ routes.post("/password", (req,res)=>{
 /////////////////////////////////////////////////
 // SUPPRIMER UN COMPTE
 /////////////////////////////////////////////////
-routes.post("/delete", (req,res)=>{
+routes.post("/delete", tokenVerif, (req,res)=>{
 
-    if(req.body.username==undefined || req.body.username==null)
-    {return res.status(403).json({"error":"USERNAME UNDEFINED"})}
-    
+    const token = req.headers.authorization.split(" ")[1]
+    const tokenDecoded = jwt.decode(token)
+    const username = tokenDecoded.username
+
     if(req.body.password==undefined || req.body.password==null)
     {return res.status(403).json({"error":"PASSWORD UNDEFINED"})}
 
-    const username       = req.body.username
     const password       = req.body.password
-
-    if(!validator.isLength(username, {min:5, max:20}))
-    {return res.status(403).json({"error":"USERNAME MUST BE MIN: 5 & MAX:20 CHARS"})}
     
     if(!validator.isLength(password, {min:5, max:20}))
     {return res.status(403).json({"error":"PASSWORD MUST BE MIN: 5 & MAX:20 CHARS"})}
