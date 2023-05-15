@@ -15,8 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       Review.belongsTo(models.Product, {foreignKey:{name:'idProduct', allowNull:false}})
     }
   }
-  Review.init({
-    id: DataTypes.UUID,
+  Review.init({ 
     review: DataTypes.INTEGER,
     comment: DataTypes.STRING,
     idUser: DataTypes.UUID,

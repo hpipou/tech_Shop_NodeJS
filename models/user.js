@@ -15,8 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Review)
     }
   }
-  User.init({
-    id: DataTypes.UUID,
+  User.init({ 
     username: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING
