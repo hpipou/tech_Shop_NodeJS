@@ -12,9 +12,17 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      productdetails: {
+      productDetails: {
         allowNull: false,
         type: Sequelize.STRING
+      },
+      productImage: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
+      productPrice: {
+        allowNull: false,
+        type: Sequelize.INTEGER
       },
       idUser: {
         allowNull: false,
